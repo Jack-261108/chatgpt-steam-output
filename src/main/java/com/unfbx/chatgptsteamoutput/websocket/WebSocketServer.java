@@ -4,12 +4,10 @@ import com.unfbx.chatgpt.OpenAiStreamClient;
 import com.unfbx.chatgpt.entity.chat.ChatCompletion;
 import com.unfbx.chatgpt.entity.chat.Message;
 import com.unfbx.chatgpt.utils.TikTokensUtil;
+import com.unfbx.chatgptsteamoutput.config.ChatGptConfig;
 import com.unfbx.chatgptsteamoutput.context.MessageContext;
 import com.unfbx.chatgptsteamoutput.listener.OpenAIWebSocketEventSourceListener;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 描述：websocket 服务端
@@ -32,25 +31,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Slf4j
 @Component
 @ServerEndpoint("/websocket/{uid}")
-public class WebSocketServer implements InitializingBean {
+public class WebSocketServer {
     public static final Map<String, MessageContext> contextHashMap = new ConcurrentHashMap<>();
     private static OpenAiStreamClient openAiStreamClient;
-    public static final int DEFAULT_TOKENS = 20;
 
-    @Autowired
-    public void setOrderService(OpenAiStreamClient openAiStreamClient) {
-        this.openAiStreamClient = openAiStreamClient;
-    }
-
-    public Integer getTokens() {
-        return tokens;
-    }
 
     @Resource
-    private Environment environment;
-    private Integer tokens = DEFAULT_TOKENS;
+    private ChatGptConfig chatGptConfig;
     //在线总数
-    private static int onlineCount;
+    private static AtomicInteger onlineCount = new AtomicInteger(0);
     //当前会话
     private Session session;
     //用户id -目前是按浏览器随机生成
@@ -68,20 +57,24 @@ public class WebSocketServer implements InitializingBean {
      */
     private final static List<Session> SESSIONS = Collections.synchronizedList(new ArrayList<>());
 
+    @Resource
+    public void setOrderService(OpenAiStreamClient openAiStreamClient) {
+        WebSocketServer.openAiStreamClient = openAiStreamClient;
+    }
 
     /**
      * 建立连接
      *
-     * @param session
-     * @param uid
+     * @param session session
+     * @param uid     用户id
      */
     @OnOpen
     public void onOpen(Session session, @PathParam("uid") String uid) {
         this.session = session;
         this.uid = uid;
 //        加入上下文环境
-        log.info("tokens{}", tokens);
-        contextHashMap.put(uid, new MessageContext(tokens));
+        log.debug("current context count:{}", chatGptConfig.getTokens());
+        contextHashMap.put(uid, new MessageContext(chatGptConfig.getTokens()));
         webSocketSet.add(this);
         SESSIONS.add(session);
         if (webSocketMap.containsKey(uid)) {
@@ -111,8 +104,8 @@ public class WebSocketServer implements InitializingBean {
     /**
      * 发送错误
      *
-     * @param session
-     * @param error
+     * @param session session
+     * @param error   error
      */
     @OnError
     public void onError(Session session, Throwable error) {
@@ -127,8 +120,6 @@ public class WebSocketServer implements InitializingBean {
      */
     @OnMessage
     public void onMessage(String msg) {
-        log.info("上下文信息：{}", getContext().get());
-        log.info("[连接ID:{}] 收到消息:{}", this.uid, msg);
         //       获取上下文环境
         MessageContext context = getContext();
         //接受参数
@@ -147,41 +138,30 @@ public class WebSocketServer implements InitializingBean {
     }
 
     public MessageContext getContext() {
-        return contextHashMap.getOrDefault(uid, new MessageContext(tokens));
-    }
-
-    @Override
-    public void afterPropertiesSet() {
-        String token = environment.getProperty("chatgpt.mytokens");
-        if (token != null) {
-            tokens = Integer.parseInt(token);
-        } else {
-            tokens = DEFAULT_TOKENS;
-        }
-        System.out.println(tokens);
+        return contextHashMap.getOrDefault(uid, new MessageContext(chatGptConfig.getTokens()));
     }
 
     /**
      * 获取当前连接数
      *
-     * @return
+     * @return 当前连接数
      */
     public static synchronized int getOnlineCount() {
-        return onlineCount;
+        return onlineCount.get();
     }
 
     /**
      * 当前连接数加一
      */
     public static synchronized void addOnlineCount() {
-        WebSocketServer.onlineCount++;
+        onlineCount.getAndAdd(1);
     }
 
     /**
      * 当前连接数减一
      */
     public static synchronized void subOnlineCount() {
-        WebSocketServer.onlineCount--;
+        onlineCount.getAndDecrement();
     }
 
 }
