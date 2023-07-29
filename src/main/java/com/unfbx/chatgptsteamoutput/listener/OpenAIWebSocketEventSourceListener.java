@@ -7,13 +7,10 @@ import com.unfbx.chatgptsteamoutput.context.MessageContext;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import okhttp3.sse.EventSource;
-import okhttp3.sse.EventSourceListener;
 import org.jetbrains.annotations.NotNull;
 
 import javax.websocket.Session;
-import java.util.Objects;
 
 /**
  * 描述：OpenAI流式输出Socket接收
@@ -22,13 +19,13 @@ import java.util.Objects;
  * @date 2023-03-23
  */
 @Slf4j
-public class OpenAIWebSocketEventSourceListener extends EventSourceListener {
+public class OpenAIWebSocketEventSourceListener extends AbstractOpenAiEventSourceListener {
 
-    private Session session;
+    private final Session session;
     private StringBuilder builder;
-    private MessageContext messageContext;
+    private final MessageContext messageContext;
 
-    public OpenAIWebSocketEventSourceListener(Session session, MessageContext context) {
+    public OpenAIWebSocketEventSourceListener(@NotNull Session session, @NotNull MessageContext context) {
         this.messageContext = context;
         builder = new StringBuilder();
         this.session = session;
@@ -38,7 +35,7 @@ public class OpenAIWebSocketEventSourceListener extends EventSourceListener {
      * {@inheritDoc}
      */
     @Override
-    public void onOpen(EventSource eventSource, Response response) {
+    public void onOpen(@NotNull EventSource eventSource, @NotNull Response response) {
         log.info("OpenAI建立sse连接...");
     }
 
@@ -67,23 +64,7 @@ public class OpenAIWebSocketEventSourceListener extends EventSourceListener {
 
 
     @Override
-    public void onClosed(EventSource eventSource) {
+    public void onClosed(@NotNull EventSource eventSource) {
         log.info("OpenAI关闭sse连接...");
-    }
-
-
-    @SneakyThrows
-    @Override
-    public void onFailure(EventSource eventSource, Throwable t, Response response) {
-        if (Objects.isNull(response)) {
-            return;
-        }
-        ResponseBody body = response.body();
-        if (Objects.nonNull(body)) {
-            log.error("OpenAI  sse连接异常data：{}，异常：{}", body.string(), t);
-        } else {
-            log.error("OpenAI  sse连接异常data：{}，异常：{}", response, t);
-        }
-        eventSource.cancel();
     }
 }
