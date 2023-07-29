@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * @author https:www.unfbx.com
  * @date 2023-02-28
  */
+@EnableWebSocket
 @SpringBootApplication
 public class ChatgptSteamOutputApplication {
 
@@ -37,14 +39,14 @@ public class ChatgptSteamOutputApplication {
     @Bean
     public OpenAiStreamClient openAiStreamClient() {
         //本地开发需要配置代理地址
-//        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 7890));
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 7890));
         HttpLoggingInterceptor httpLoggingInterceptor = new HttpLoggingInterceptor(new OpenAILogger());
         //!!!!!!测试或者发布到服务器千万不要配置Level == BODY!!!!
         //!!!!!!测试或者发布到服务器千万不要配置Level == BODY!!!!
         httpLoggingInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
         OkHttpClient okHttpClient = new OkHttpClient
                 .Builder()
-//                .proxy(proxy)
+                .proxy(proxy)
                 .addInterceptor(httpLoggingInterceptor)
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(600, TimeUnit.SECONDS)
@@ -52,7 +54,7 @@ public class ChatgptSteamOutputApplication {
                 .build();
         return OpenAiStreamClient
                 .builder()
-                .apiHost(apiHost)
+//                .apiHost(apiHost)
                 .apiKey(apiKey)
                 //自定义key使用策略 默认随机策略
                 .keyStrategy(new KeyRandomStrategy())
