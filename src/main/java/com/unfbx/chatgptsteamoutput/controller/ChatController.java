@@ -3,15 +3,14 @@ package com.unfbx.chatgptsteamoutput.controller;
 import cn.hutool.core.util.StrUtil;
 import com.unfbx.chatgpt.exception.BaseException;
 import com.unfbx.chatgpt.exception.CommonError;
-import com.unfbx.chatgptsteamoutput.controller.request.ChatRequest;
-import com.unfbx.chatgptsteamoutput.controller.response.ChatResponse;
 import com.unfbx.chatgptsteamoutput.service.SseService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**
@@ -42,21 +41,6 @@ public class ChatController {
         String uid = getUid(headers);
         return sseService.createSse(uid);
     }
-
-    /**
-     * 聊天接口
-     *
-     * @param chatRequest
-     * @param headers
-     */
-    @CrossOrigin
-    @PostMapping("/chat")
-    @ResponseBody
-    public ChatResponse sseChat(@RequestBody ChatRequest chatRequest, @RequestHeader Map<String, String> headers, HttpServletResponse response) {
-        String uid = getUid(headers);
-        return sseService.sseChat(uid, chatRequest);
-    }
-
     /**
      * 关闭连接
      *
@@ -68,17 +52,6 @@ public class ChatController {
         String uid = getUid(headers);
         sseService.closeSse(uid);
     }
-
-    @GetMapping("")
-    public String index() {
-        return "1.html";
-    }
-
-    @GetMapping("/websocket")
-    public String websocket() {
-        return "websocket.html";
-    }
-
     /**
      * 获取uid
      *

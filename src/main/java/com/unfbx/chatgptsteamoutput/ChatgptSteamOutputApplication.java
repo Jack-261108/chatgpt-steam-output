@@ -50,9 +50,11 @@ public class ChatgptSteamOutputApplication {
                 .writeTimeout(600, TimeUnit.SECONDS)
                 .readTimeout(600, TimeUnit.SECONDS)
                 .build();
+        System.out.println(chatGptConfig.getApiKey());
         return OpenAiStreamClient.builder()
 //                .apiHost(apiHost)
                 .apiKey(chatGptConfig.getApiKey())
+
                 //自定义key使用策略 默认随机策略
                 .keyStrategy(new KeyRandomStrategy()).okHttpClient(okHttpClient).build();
     }

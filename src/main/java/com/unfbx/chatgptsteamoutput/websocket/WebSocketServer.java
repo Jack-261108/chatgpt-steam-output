@@ -8,6 +8,7 @@ import com.unfbx.chatgptsteamoutput.config.ChatGptConfig;
 import com.unfbx.chatgptsteamoutput.context.MessageContext;
 import com.unfbx.chatgptsteamoutput.listener.OpenAIWebSocketEventSourceListener;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -35,9 +36,7 @@ public class WebSocketServer {
     public static final Map<String, MessageContext> contextHashMap = new ConcurrentHashMap<>();
     private static OpenAiStreamClient openAiStreamClient;
 
-
-    @Resource
-    private ChatGptConfig chatGptConfig;
+    private static ChatGptConfig chatGptConfig;
     //在线总数
     private static AtomicInteger onlineCount = new AtomicInteger(0);
     //当前会话
@@ -62,6 +61,11 @@ public class WebSocketServer {
         WebSocketServer.openAiStreamClient = openAiStreamClient;
     }
 
+    @Autowired
+    public void setChatGptConfig(ChatGptConfig chatGptConfig) {
+        this.chatGptConfig = chatGptConfig;
+    }
+
     /**
      * 建立连接
      *
@@ -73,7 +77,8 @@ public class WebSocketServer {
         this.session = session;
         this.uid = uid;
 //        加入上下文环境
-        log.debug("current context count:{}", chatGptConfig.getTokens());
+        log.info("current context count:{}", openAiStreamClient);
+        log.info("curr config:{}", chatGptConfig.getTokens());
         contextHashMap.put(uid, new MessageContext(chatGptConfig.getTokens()));
         webSocketSet.add(this);
         SESSIONS.add(session);
