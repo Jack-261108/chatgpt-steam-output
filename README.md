@@ -4,7 +4,6 @@ Open AI ChatGPT流式输出。Open AI Stream output. ChatGPT Stream output、
 
 **此项目只是对[chatgpt-java](https://github.com/Grt1228/chatgpt-java) SDK的一个简单示例项目，实现流式输出，仅做参考仅做参考仅做参考。大家最好还是自己基于SDK动手实现**
 ---
-### 目前本项目支持两种流式输出，支持Tokens计算，基于[ChatGPT-Java SDK](https://github.com/Grt1228/chatgpt-java) 。
 
 流式输出实现方式 | 小程序 | 安卓 | ios | H5 
 ---|---|---|---|---
@@ -26,44 +25,4 @@ Completion对象本身有一个stream属性，当stream为true时候Api的Respon
 具体可以看下文档：https://platform.openai.com/docs/api-reference/completions/create
 ![实例2](https://user-images.githubusercontent.com/27008803/224496355-76e94a21-a346-4260-93bf-9088bcb31a18.gif)
 
-## 依赖
-最新版参考：https://github.com/Grt1228/chatgpt-java
-目前是1.0.12版本
-```
-<dependency>
-    <groupId>com.unfbx</groupId>
-    <artifactId>chatgpt-java</artifactId>
-    <version>1.0.12</version>
-</dependency>
-```
-# 项目部署
-
-## 拉取源代码
-```
-git clone https://github.com/Grt1228/chatgpt-steam-output
-```
-## 修改配置
-修改application.properties文件
-默认8000端口，可以自己修改，修改端口记得将1.html文件的8000端口也替换掉
-```
-server.port=8000
-chatgpt.apiKey=配置自己的key
-chatgpt.apiHost=配置opai的Api Host地址
-```
-## 运行
-运行ChatgptSteamOutputApplication
-```
-com.unfbx.chatgptsteamoutput.ChatgptSteamOutputApplication
-```
-运行成功后打开浏览器：
-
-```
-sse实现：http://localhost:8000/
-websocket实现：http://localhost:8000/websocket   
-```
-能打开此页面表示运行成功
-<img width="954" alt="8ccfe107fc10deffdf7fac42b95547b" src="https://user-images.githubusercontent.com/27008803/230941561-79e344ed-b751-40c7-9a59-cbe5216923b1.png">
-
-
-代码其实很简单，小伙伴们可以下载代码来看下。
 
