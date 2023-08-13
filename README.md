@@ -20,7 +20,7 @@ WebSocket参考：[OpenAIWebSocketEventSourceListener](https://github.com/Grt122
 * 快速开始
 * 1 克隆本项目
 * 2 配置自己的apikey和上下文Token数(默认是20)
-* 运行本项目的前端
+* 运行本项目的前端 [Gpt](https://github.com/Jack-261108/Gpt)
 * 
 
 
